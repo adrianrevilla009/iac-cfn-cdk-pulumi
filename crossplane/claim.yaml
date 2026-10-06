@@ -1,0 +1,8 @@
+apiVersion: lab.example.org/v1alpha1
+kind: OrderStack
+metadata:
+  name: orders-dev
+  namespace: default
+spec:
+  env: dev
+  region: eu-west-1

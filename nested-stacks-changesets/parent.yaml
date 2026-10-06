@@ -1,0 +1,27 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Parent stack composing the Orders stack from nested child templates
+Parameters:
+  Env:
+    Type: String
+    Default: dev
+  TemplatesBucket:
+    Type: String
+    Description: S3 bucket holding child.yaml (aws cloudformation package uploads it)
+Resources:
+  Queues:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://${TemplatesBucket}.s3.amazonaws.com/child-queues.yaml
+      Parameters:
+        Env: !Ref Env
+  Table:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://${TemplatesBucket}.s3.amazonaws.com/child-table.yaml
+      Parameters:
+        Env: !Ref Env
+Outputs:
+  QueueUrl:
+    Value: !GetAtt Queues.Outputs.QueueUrl
+  TableName:
+    Value: !GetAtt Table.Outputs.TableName

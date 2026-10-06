@@ -1,0 +1,45 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: orderstack-aws
+spec:
+  compositeTypeRef:
+    apiVersion: lab.example.org/v1alpha1
+    kind: XOrderStack
+  mode: Pipeline
+  pipeline:
+    - step: patch-and-transform
+      functionRef:
+        name: function-patch-and-transform
+      input:
+        apiVersion: pt.fn.crossplane.io/v1beta1
+        kind: Resources
+        resources:
+          - name: queue
+            base:
+              apiVersion: sqs.aws.upbound.io/v1beta1
+              kind: Queue
+              spec:
+                forProvider:
+                  region: eu-west-1
+                  visibilityTimeoutSeconds: 30
+            patches:
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.region
+                toFieldPath: spec.forProvider.region
+          - name: table
+            base:
+              apiVersion: dynamodb.aws.upbound.io/v1beta1
+              kind: Table
+              spec:
+                forProvider:
+                  region: eu-west-1
+                  billingMode: PAY_PER_REQUEST
+                  hashKey: orderId
+                  attribute:
+                    - name: orderId
+                      type: S
+            patches:
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.region
+                toFieldPath: spec.forProvider.region

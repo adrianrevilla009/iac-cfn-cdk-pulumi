@@ -1,0 +1,31 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xorderstacks.lab.example.org
+spec:
+  group: lab.example.org
+  names:
+    kind: XOrderStack
+    plural: xorderstacks
+  claimNames:
+    kind: OrderStack
+    plural: orderstacks
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                env:
+                  type: string
+                  enum: [dev, prod]
+                  default: dev
+                region:
+                  type: string
+                  default: eu-west-1
+              required: [env]

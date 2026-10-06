@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Orders stack - queue with dead-letter queue and an orders table (the shared stack of this repo)
+Parameters:
+  Env:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, prod]
+Conditions:
+  IsProd: !Equals [!Ref Env, prod]
+Resources:
+  OrdersDlq:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub orders-dlq-${Env}
+      MessageRetentionPeriod: 1209600
+  OrdersQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub orders-${Env}
+      VisibilityTimeout: 30
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt OrdersDlq.Arn
+        maxReceiveCount: 5
+  OrdersTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: !If [IsProd, Retain, Delete]
+    Properties:
+      TableName: !Sub orders-${Env}
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: orderId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: orderId
+          KeyType: HASH
+Outputs:
+  QueueUrl:
+    Value: !Ref OrdersQueue
+  TableName:
+    Value: !Ref OrdersTable

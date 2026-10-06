@@ -1,0 +1,6 @@
+name: orders
+runtime:
+  name: java
+  options:
+    binary: target/pulumi-java-1.0.0.jar
+description: Orders stack in Pulumi Java

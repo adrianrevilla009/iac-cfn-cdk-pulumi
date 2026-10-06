@@ -1,0 +1,20 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Child stack - orders queue and dead-letter queue
+Parameters:
+  Env:
+    Type: String
+Resources:
+  OrdersDlq:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub orders-dlq-${Env}
+  OrdersQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub orders-${Env}
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt OrdersDlq.Arn
+        maxReceiveCount: 5
+Outputs:
+  QueueUrl:
+    Value: !Ref OrdersQueue
